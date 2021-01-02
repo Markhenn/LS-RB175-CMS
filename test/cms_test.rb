@@ -66,7 +66,7 @@ class CmsTest < Minitest::Test
   end
 
   def test_viewing_markdown_files
-    create_document "about.md", "<h1>Ruby is...</h1>"
+    create_document "about.md", "# Ruby is..."
 
     get "/about.md"
 
