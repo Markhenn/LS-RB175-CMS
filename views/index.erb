@@ -8,6 +8,11 @@
       <a href="/<%= file %>/edit">
         edit
       </a>
+      <form class="inline" action="/<%= file %>/delete" method="post">
+        <button type="submit">delete</button>
+      </form>
     </li>
   <% end %>
 </ul>
+
+<p><a href="/new">New Document</a></p>

@@ -37,7 +37,9 @@ class CmsTest < Minitest::Test
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
     assert_includes last_response.body, "changes.txt"
     assert_includes last_response.body, "about.md"
-
+    assert_includes last_response.body, %(<a href="/new")
+    assert_includes last_response.body, "<button"
+    assert_includes last_response.body, "delete"
   end
 
   def test_viewing_a_text_document
@@ -102,5 +104,43 @@ class CmsTest < Minitest::Test
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, "Content Updated"
+  end
+
+  def test_create_page
+    get "/new"
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "<button"
+    assert_includes last_response.body, %(<input name="filename")
+    assert_includes last_response.body, %(form action="/create" method="post")
+  end
+
+  def test_create_new_document
+    post "/create", filename: "new_file.txt"
+
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+
+    assert_includes last_response.body, "new_file.txt"
+    assert_includes last_response.body, "new_file.txt was created."
+
+    post "/create", filename: ""
+
+    assert_equal 422, last_response.status
+    assert_includes last_response.body, "A name is required."
+  end
+
+  def test_deleting_a_document
+    create_document "to_delete.txt"
+
+    post "/to_delete.txt/delete"
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+    assert_includes last_response.body, "to_delete.txt was deleted."
+
+    get "/"
+    refute_includes last_response.body, "to_delete.txt"
   end
 end

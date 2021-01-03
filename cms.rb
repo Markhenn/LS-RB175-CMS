@@ -1,5 +1,5 @@
 require "sinatra"
-require "sinatra/reloader"
+require "sinatra/reloader" if development?
 require "tilt/erubis"
 require "redcarpet"
 
@@ -27,6 +27,10 @@ def load_file_content(path)
   end
 end
 
+def valid_name(name)
+  name != ""
+end
+
 configure do
   enable :sessions
   set :sessions_secret, "secret"
@@ -41,6 +45,10 @@ end
 
 get "/" do
   erb :index
+end
+
+get "/new" do
+  erb :new
 end
 
 get "/:filename" do
@@ -68,11 +76,33 @@ get "/:filename/edit" do
   end
 end
 
+post "/create" do
+  unless valid_name(params[:filename])
+    status 422
+    session[:message] = "A name is required."
+    erb :new
+  else
+    new_file = File.join(data_path, params[:filename])
+    File.write(new_file, "")
+
+    session[:message] = "#{params[:filename]} was created."
+    redirect "/"
+  end
+end
+
 post "/:filename" do
   file_path = File.join(data_path, params[:filename])
 
   File.write(file_path, params[:content])
 
   session[:message] = "#{params[:filename]} has been updated."
+  redirect "/"
+end
+
+post "/:filename/delete" do
+  file_path = File.join(data_path, params[:filename])
+
+  File.delete(file_path)
+  session[:message] = "#{params[:filename]} was deleted."
   redirect "/"
 end
