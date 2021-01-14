@@ -1,0 +1,14 @@
+<form method="post" action="/users/create_user">
+  <label>Please choose a username and password</label>
+  <div>
+    <label for="username">Username:
+      <input id="username" name="username" value="<%= @username %>">
+    </label>
+  </div>
+  <div>
+    <label for="password">Password:
+      <input type="password" id="password" name="password">
+    </label>
+  </div>
+  <button type="submit">Sign Up</button>
+</form>

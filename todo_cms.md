@@ -1,24 +1,77 @@
-# Delete a document
+# Create a user sign up page
 
-delete button next to document when open
-delete docuement and show message $Filenmae was deleted.
-
-## Show delete button
-add button to index page
-  action to /:filename/delete
-  method post
-
-add route to delete
-  data_path + params filename -> join
-  File.delete on path
-
+Create a page where users can sign up
+  route to add user users.yml
+  validate
+    username
+      not empty
+      not taken
+    password
+      at least 8 chars
 
 ## Test
-Test that a delete button is on index page
+test_sign_up_page
+  get /signup
+  assert
+    200
+    input
+    button
 
-Test deleting a document
-  set up document
-  call the delete route
-  check that decument does not exist on index page
-  check redirection
-  check message 
+
+
+
+test_sign_user_successfully
+  post /create_user, {user, pw} -> correct
+  assert
+    302
+    message in session
+    user in session
+    
+
+
+
+
+test_sign_up_with_empty_or_taken_name
+  post /create_user, empty user
+  assert
+    message in body
+    422
+    nil user
+    
+
+  post /create_user, taken user (admin)
+  assert
+    message in body
+    422
+    nil user
+
+
+
+
+
+test_sign_up_with_invalid_password
+  post /create_user,short password
+  assert
+    message in body
+    422
+    nil user
+
+
+## HTML
+  new sign up page
+
+  like sign page
+
+## Ruby
+post create users
+
+validate username
+validate password
+
+store username and hashed password in users
+
+send message and redirect to index
+
+
+
+
