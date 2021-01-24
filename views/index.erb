@@ -1,3 +1,5 @@
+<h3>Documents</h3>
+
 <ul>
   <% @files.each do |file| %>
     <li>
@@ -15,7 +17,27 @@
   <% end %>
 </ul>
 
+<h3>Media</h3>
+
+<ul>
+  <% @media.each do |file| %>
+    <li>
+      <a href="/<%= file %>">
+        <%= File.basename(file) %>
+      </a>
+      <form class="inline" action="/<%= file %>/delete" method="post">
+        <button type="submit">delete</button>
+      </form>
+    </li>
+  <% end %>
+</ul>
+
 <p><a href="/new">New Document</a></p>
+
+<form action="/media/upload" method="post" enctype="multipart/form-data">
+  <input type="file" name="filename">
+  <input type="submit">
+</form>
 
 <% if session[:user] %>
   <form action="/users/signout" method="post">

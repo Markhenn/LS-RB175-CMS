@@ -21,6 +21,8 @@ class CmsTest < Minitest::Test
 
   def setup
     FileUtils.mkdir_p(data_path)
+    FileUtils.mkdir_p(image_path)
+
     File.open(File.join(config_path, "users.yml"), "a") do |file|
       file.puts "---"
       file.puts "admin: $2a$12$pvtX5Gf2ZloWTIDoet0PmOceo5dwiiC33sQzMpOAGtn8YHzyXJeVi"
@@ -29,6 +31,7 @@ class CmsTest < Minitest::Test
 
   def teardown
     FileUtils.rm_rf(data_path)
+    FileUtils.rm_rf(image_path)
     File.delete(File.join(config_path, "users.yml"))
   end
 
@@ -199,6 +202,10 @@ class CmsTest < Minitest::Test
     post "/to_delete.txt/delete"
     assert_equal 401, last_response.status
     assert_equal signout_message, session[:message]
+
+    post "/users/delete"
+    assert_equal 401, last_response.status
+    assert_equal signout_message, session[:message]
   end
 
   def test_sign_up_page
@@ -242,7 +249,20 @@ class CmsTest < Minitest::Test
     assert_nil session[:user]
   end
 
-  def test_delete_user
+  def test_upload_a_file
+    path = File.join(config_path, "sample.png")
+    post "/media/upload", {"filename" => Rack::Test::UploadedFile.new(path, "image/png")}, admin_session
+    assert_equal "File uploaded.", session[:message]
+    assert_equal last_response.status, 302
 
+    get "/"
+    assert_includes last_response.body, "sample.png"
+  end
+
+  def test_invalid_file_type_upload
+    post "/media/upload", { filename: { filename: "sample.txt" }}, admin_session
+    assert_equal "Invalid file type.", session[:message]
+    assert_equal 422, last_response.status
+    refute_includes last_response.body, "sample.txt"
   end
 end

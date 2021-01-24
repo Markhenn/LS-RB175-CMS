@@ -1,77 +1,49 @@
-# Create a user sign up page
+# A user can upload a file and open it in the file structure
 
-Create a page where users can sign up
-  route to add user users.yml
-  validate
-    username
-      not empty
-      not taken
-    password
-      at least 8 chars
+
+# Problems
+Upload a file
+store file in filesystem
+decide how to open files
+  text done
+  pictures just open without
+make sure that edit button disappears for pictures
+only logged in users can upload
+
 
 ## Test
-test_sign_up_page
-  get /signup
-  assert
-    200
-    input
-    button
+
+test upload file
+
+post to upload with credentials admin
+
+<!-- check redirect 302 -->
+<!-- check message - file uploaded -->
+<!-- check file existens in index -->
+
+<!-- check for invalid file type -->
+<!-- 422 -->
+<!-- Invalid file type. -->
+
+## Update Ruby
+<!-- set up image path for prod and dev -->
+
+<!-- create post images/upload -->
+<!--   check that uploaded file is a png jpg (ending) -->
+<!--   save file to media -->
 
 
+<!-- set up opening of images for png jpg -->
+
+<!-- update delete to include media -->
+
+<!-- update get / -->
+<!--   to include media data -->
+<!--   but not the media folder -->
 
 
-test_sign_user_successfully
-  post /create_user, {user, pw} -> correct
-  assert
-    302
-    message in session
-    user in session
-    
+## HTTP
+<!-- update index to have an upload button above loggin in -->
 
-
-
-
-test_sign_up_with_empty_or_taken_name
-  post /create_user, empty user
-  assert
-    message in body
-    422
-    nil user
-    
-
-  post /create_user, taken user (admin)
-  assert
-    message in body
-    422
-    nil user
-
-
-
-
-
-test_sign_up_with_invalid_password
-  post /create_user,short password
-  assert
-    message in body
-    422
-    nil user
-
-
-## HTML
-  new sign up page
-
-  like sign page
-
-## Ruby
-post create users
-
-validate username
-validate password
-
-store username and hashed password in users
-
-send message and redirect to index
-
-
-
-
+<!-- creat new loop for media data to show up on index page -->
+<!--   can be openend and deleted -->

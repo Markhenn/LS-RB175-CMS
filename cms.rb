@@ -13,6 +13,14 @@ def data_path
   end
 end
 
+def image_path
+  if ENV["RACK_ENV"] == "test"
+    File.expand_path("../test/data/media", __FILE__)
+  else
+    File.expand_path("../data/media", __FILE__)
+  end
+end
+
 def config_path
   if ENV["RACK_ENV"] == "test"
     File.expand_path("../test", __FILE__)
@@ -35,6 +43,12 @@ def load_file_content(path)
   when ".md"
     erb render_markdown(content)
   end
+end
+
+def extension_valid?(path)
+  extension = File.extname(path)
+
+  %w(.img .pdf .png).include? extension
 end
 
 def valid_name(name)
@@ -89,14 +103,18 @@ configure do
   set :sessions_secret, "secret"
 end
 
-before do
-  pattern = File.join(data_path, "*")
-  @files = Dir.glob(pattern).map do |path|
-    File.basename(path)
-  end
-end
-
 get "/" do
+  data_p = File.join(data_path, "*")
+  img_p = File.join(image_path, "*")
+  @files = Dir.glob(data_p).map do |path|
+    next if File.directory?(path)
+    File.basename(path)
+  end.compact
+
+  @media = Dir.glob(img_p).map do |path|
+    File.join("media", File.basename(path))
+  end
+
   erb :index
 end
 
@@ -104,6 +122,17 @@ get "/new" do
   verify_credentials
 
   erb :new
+end
+
+get "/media/:filename" do
+  file_path = File.join(image_path, params[:filename])
+
+  if File.exist?(file_path)
+    send_file file_path
+  else
+    session[:message] = "#{params[:filename]} does not exist."
+    redirect "/"
+  end
 end
 
 get "/:filename" do
@@ -149,6 +178,26 @@ post "/create" do
   end
 end
 
+post "/media/upload" do
+  verify_credentials
+  filename = params[:filename][:filename]
+  file = params[:filename][:tempfile]
+  file_path = File.join(image_path, filename)
+
+  if extension_valid?(filename)
+    File.open(file_path, "wb") do |new_file|
+      new_file.write(file.read)
+    end
+
+    session[:message] = "File uploaded."
+    redirect "/"
+  else
+    session[:message] = "Invalid file type."
+    status 422
+    redirect "/", 422
+  end
+end
+
 post "/:filename" do
   verify_credentials
 
@@ -157,6 +206,16 @@ post "/:filename" do
   File.write(file_path, params[:content])
 
   session[:message] = "#{params[:filename]} has been updated."
+  redirect "/"
+end
+
+post "/media/:filename/delete" do
+  verify_credentials
+
+  file_path = File.join(image_path, params[:filename])
+
+  File.delete(file_path)
+  session[:message] = "#{params[:filename]} was deleted."
   redirect "/"
 end
 
@@ -224,6 +283,8 @@ post "/users/create_user" do
 end
 
 post "/users/delete" do
+  verify_credentials
+
   username = params[:username]
 
   users = load_users
